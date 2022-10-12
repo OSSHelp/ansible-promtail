@@ -103,16 +103,15 @@ You can override limits above for supported jobs with these variables:
 For every job you can control rate, burst and drop mode, e.g.:
 
 ```yaml
+      promtail_limits_nginx:
+        rate: 25
       promtail_limits_system:
         rate: 10
         burst: 25
         drop: false
-      promtail_limits_nginx:
-        rate: 25
-        burst: 50
 ```
 
-`drop` key can be omitted - if so, it will be inherited from global `promtail_limits_config.readline_rate_drop`. `rate` and `burst` must be present for limit section to be generated properly.
+`drop` and `burst` keys are optional - if omitted, they will be inherited from global `promtail_limits_config.readline_rate_drop` and `promtail_limits_config.readline_burst`.
 
 ### Resource usage
 
