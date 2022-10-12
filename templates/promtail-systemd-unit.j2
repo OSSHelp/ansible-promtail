@@ -1,0 +1,30 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Promtail service
+
+[Service]
+Type=forking
+User={{ promtail_user.user }}
+Group={{ promtail_user.group }}
+RuntimeDirectory=promtail
+RuntimeDirectoryMode=0755
+{% if ansible_distribution_release == 'focal' %}
+MemoryMax={{ promtail_service_limits.memory }}
+PIDFile=/run/promtail/pid
+{% else %}
+MemoryLimit={{ promtail_service_limits.memory }}
+PIDFile=/var/run/promtail/pid
+{% endif %}
+ExecStart=/sbin/start-stop-daemon -Sbmp /var/run/promtail/pid -x {{ promtail_dirs.binary_dir }}/{{ promtail_binary_name }} -- -config.file {{ promtail_dirs.config_dir }}/{{ promtail_config_file }}
+
+Restart=always
+RestartSec=5
+TimeoutSec=5
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=promtail
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+{{ ansible_managed | comment }}
+
+{% if promtail_server|length %}
+server:
+  {{ promtail_server | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+
+{%- if promtail_positions|length %}
+positions:
+  {{ promtail_positions | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+
+{%- if promtail_clients|length %}
+clients:
+  {{ promtail_clients | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+
+scrape_configs:
+{% if promtail_relay_enabled %}
+  {{ promtail_default_jobs.relay | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+{% if promtail_collect_system %}
+{% if promtail_limits_system.rate is defined and promtail_limits_system.burst is defined %}
+{% set x=promtail_default_jobs.system[0]["pipeline_stages"].__setitem__(0, {"limit": {"rate": promtail_limits_system.rate, "burst": promtail_limits_system.burst, "drop": promtail_limits_system.drop|default(promtail_limits_config.readline_rate_drop)}}) %}
+{% endif %}
+{% set x=promtail_default_jobs.system[0]["pipeline_stages"].__delitem__(0) %}
+  {{ promtail_default_jobs.system | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+{% if promtail_collect_journal and ansible_distribution_release != 'xenial' %}
+{% if promtail_limits_journal.rate is defined and promtail_limits_journal.burst is defined %}
+{% set x=promtail_default_jobs.journal[0]["pipeline_stages"].__setitem__(0, {"limit": {"rate": promtail_limits_journal.rate, "burst": promtail_limits_journal.burst, "drop": promtail_limits_journal.drop|default(promtail_limits_config.readline_rate_drop)}}) %}
+{% endif %}
+{% set x=promtail_default_jobs.journal[0]["pipeline_stages"].__delitem__(0) %}
+  {{ promtail_default_jobs.journal | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+{% if promtail_collect_audit %}
+{% if promtail_limits_audit.rate is defined and promtail_limits_audit.burst is defined %}
+{% set x=promtail_default_jobs.audit[0]["pipeline_stages"].__setitem__(0, {"limit": {"rate": promtail_limits_audit.rate, "burst": promtail_limits_audit.burst, "drop": promtail_limits_audit.drop|default(promtail_limits_config.readline_rate_drop)}}) %}
+{% endif %}
+{% set x=promtail_default_jobs.audit[0]["pipeline_stages"].__delitem__(0) %}
+  {{ promtail_default_jobs.audit | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+{% if promtail_collect_nginx %}
+{% if promtail_limits_nginx.rate is defined and promtail_limits_nginx.burst is defined %}
+{% set x=promtail_default_jobs.nginx[0]["pipeline_stages"].__setitem__(0, {"limit": {"rate": promtail_limits_nginx.rate, "burst": promtail_limits_nginx.burst, "drop": promtail_limits_nginx.drop|default(promtail_limits_config.readline_rate_drop)}}) %}
+{% endif %}
+{% set x=promtail_default_jobs.nginx[0]["pipeline_stages"].__delitem__(0) %}
+  {{ promtail_default_jobs.nginx | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+{% if promtail_collect_docker %}
+{% if promtail_limits_docker.rate is defined and promtail_limits_docker.burst is defined %}
+{% set x=promtail_default_jobs.docker[0]["pipeline_stages"].__setitem__(0, {"limit": {"rate": promtail_limits_docker.rate, "burst": promtail_limits_docker.burst, "drop": promtail_limits_docker.drop|default(promtail_limits_config.readline_rate_drop)}}) %}
+{% endif %}
+{% set x=promtail_default_jobs.docker[0]["pipeline_stages"].__delitem__(0) %}
+  {{ promtail_default_jobs.docker | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+{% if promtail_scrape_configs|length %}
+  {{ promtail_scrape_configs | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}
+
+{%- if promtail_limits_config|length %}
+limits_config:
+  {{ promtail_limits_config | to_nice_yaml(indent=2) | indent(2, False) }}
+{% endif -%}

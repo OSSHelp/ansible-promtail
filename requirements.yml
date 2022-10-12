@@ -1,0 +1,3 @@
+---
+- name: lxc-reboot
+  src: https://oss.help/ansible/pub/roles/l/2/lxc-reboot-stable.tar.gz

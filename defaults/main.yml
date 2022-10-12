@@ -1,0 +1,161 @@
+---
+promtail_setup: full
+promtail_version: 2.6.1
+promtail_download_url: "https://github.com/grafana/loki/releases/download/v{{ promtail_version }}/promtail-linux-amd64.zip"
+promtail_download_sums: "sha256:https://github.com/grafana/loki/releases/download/v{{ promtail_version }}/SHA256SUMS"
+
+promtail_user:
+  user: root
+  group: root
+promtail_additional_groups: []
+promtail_dirs:
+  binary_dir: /usr/local/bin
+  config_dir: /etc/promtail
+  lib_dir: /var/lib/promtail
+  tmp_dir: "/tmp/promtail-{{ promtail_version }}"
+promtail_config_file: config.yml
+promtail_binary_name: promtail
+promtail_service_name: promtail
+promtail_main_cfg_template: promtail-main-cfg.j2
+promtail_systemd_unit: "/etc/systemd/system/{{ promtail_service_name }}.service"
+
+promtail_labels_env: production
+promtail_labels_instance: "{{ inventory_hostname }}"
+promtail_server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+promtail_positions:
+  filename: "{{ promtail_dirs.lib_dir }}/positions.yaml"
+promtail_clients:
+  - url: 'http://localhost:3100/loki/api/v1/push'
+promtail_scrape_configs: []
+promtail_limits_config:
+  readline_rate_enabled: true
+  readline_rate_drop: true
+  readline_rate: 100
+  readline_burst: 1000
+
+promtail_service_limits:
+  memory: 1G
+
+promtail_relay_enabled: false
+promtail_collect_system: true
+promtail_collect_nginx: false
+promtail_collect_audit: false
+promtail_collect_journal: false
+promtail_collect_docker: false
+
+# if per-job limits are set - "placeholder" keys below will be replaced with limit section
+# if no per-job limits present - "placeholder" keys will be deleted
+# this behaviour needs to be reworked after moving to newer jinja versions or adding do-extension
+promtail_default_jobs:
+  relay:
+    - job_name: relay
+      loki_push_api:
+        server:
+          http_listen_port: 3500
+        labels:
+          instance: "{{ promtail_labels_instance }}"
+      relabel_configs:
+        - target_label: 'stream'
+          source_labels: ['source']
+        - target_label: 'source'
+          replacement: "{{ promtail_labels_instance }}"
+  system:
+    - job_name: system
+      static_configs:
+        - targets:
+            - localhost
+          labels:
+            job: varlogs
+            env: "{{ promtail_labels_env }}"
+            instance: "{{ promtail_labels_instance }}"
+            source: "{{ promtail_labels_instance }}"
+            __path__: /var/log/*log
+      pipeline_stages:
+        - placeholder
+  audit:
+    - job_name: audit
+      static_configs:
+        - targets:
+            - localhost
+          labels:
+            job: audit
+            env: "{{ promtail_labels_env }}"
+            instance: "{{ promtail_labels_instance }}"
+            source: "{{ promtail_labels_instance }}"
+            __path__: /var/log/audit/*.log
+      pipeline_stages:
+        - placeholder
+        - match:
+            selector: '{job="audit"}'
+            stages:
+              - regex:
+                  expression: 'type=(?P<type>[A-Z_]+) .*'
+              - labels:
+                  type:
+  nginx:
+    - job_name: nginx
+      static_configs:
+        - targets:
+            - localhost
+          labels:
+            job: nginx
+            env: "{{ promtail_labels_env }}"
+            instance: "{{ promtail_labels_instance }}"
+            source: "{{ promtail_labels_instance }}"
+            __path__: /var/log/nginx/*access.log
+      pipeline_stages:
+        - placeholder
+        - match:
+            selector: '{job="nginx"}'
+            stages:
+              - json:
+                  expressions:
+                    vhost: host
+                    method: request_method
+                    status: status
+              - labels:
+                  vhost:
+                  method:
+                  status:
+  journal:
+    - job_name: journal
+      journal:
+        json: true
+        max_age: 12h
+        path: /var/log/journal
+        labels:
+          job: systemd-journal
+          env: "{{ promtail_labels_env }}"
+          instance: "{{ promtail_labels_instance }}"
+          source: "{{ promtail_labels_instance }}"
+      relabel_configs:
+        - source_labels: ['__journal__systemd_unit']
+          target_label: systemd_unit
+        - source_labels: ['__journal__hostname']
+          target_label: nodename
+        - source_labels: ['__journal_syslog_identifier']
+          target_label: syslog_identifier
+      pipeline_stages:
+        - placeholder
+  docker:
+    - job_name: docker
+      docker_sd_configs:
+        - filters:
+            - name: label
+              values: ['promtail=true']
+          host: unix:///var/run/docker.sock
+          refresh_interval: 15s
+      pipeline_stages:
+        - placeholder
+        - docker: {}
+        - static_labels:
+            job: docker
+            env: "{{ promtail_labels_env }}"
+            instance: "{{ promtail_labels_instance }}"
+            source: "{{ promtail_labels_instance }}"
+      relabel_configs:
+        - regex: /(.*)
+          source_labels: ['__meta_docker_container_name']
+          target_label: container_name

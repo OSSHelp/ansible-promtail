@@ -1,0 +1,18 @@
+---
+
+- name: create systemd unit
+  template:
+    src: promtail-systemd-unit.j2
+    dest: "{{ promtail_systemd_unit }}"
+  notify:
+    - reload promtail unit
+    - restart promtail service
+
+- name: create main configuration file
+  template:
+    src: "{{ promtail_main_cfg_template }}"
+    dest: "{{ promtail_dirs.config_dir }}/{{ promtail_config_file }}"
+    owner: root
+    group: "{{ promtail_user.group }}"
+    mode: 0640
+  notify: restart promtail service

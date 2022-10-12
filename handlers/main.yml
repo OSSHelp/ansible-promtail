@@ -1,0 +1,10 @@
+---
+
+- name: reload promtail unit
+  systemd:
+    daemon_reload: true
+
+- name: restart promtail service
+  systemd:
+    name: "{{ promtail_service_name }}"
+    state: restarted

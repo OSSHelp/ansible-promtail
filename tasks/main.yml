@@ -1,0 +1,14 @@
+---
+
+- name: gather required facts
+  setup:
+    gather_subset: [min]
+  when: ansible_distribution_release is not defined
+
+- name: install
+  include_tasks: install.yml
+  when: promtail_setup == "full" or promtail_setup == "install"
+
+- name: configure
+  import_tasks: configure.yml
+  when: promtail_setup == "full" or promtail_setup == "configure"
