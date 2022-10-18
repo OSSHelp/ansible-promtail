@@ -57,9 +57,9 @@ promtail_default_jobs:
         labels:
           instance: "{{ promtail_labels_instance }}"
       relabel_configs:
-        - target_label: 'stream'
-          source_labels: ['source']
-        - target_label: 'source'
+        - source_labels: ['instance']
+          target_label: 'source'
+        - target_label: 'instance'
           replacement: "{{ promtail_labels_instance }}"
   system:
     - job_name: system
