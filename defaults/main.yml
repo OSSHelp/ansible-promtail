@@ -45,9 +45,50 @@ promtail_collect_audit: false
 promtail_collect_journal: false
 promtail_collect_docker: false
 
-# if per-job limits are set - "placeholder" keys below will be replaced with limit section
-# if no per-job limits present - "placeholder" keys will be deleted
+promtail_system_custom_stages: []
+promtail_nginx_custom_stages: []
+promtail_audit_custom_stages: []
+promtail_journal_custom_stages: []
+promtail_docker_custom_stages: []
+
+promtail_audit_default_stages:
+  - match:
+      selector: '{job="audit"}'
+      stages:
+        - regex:
+            expression: 'type=(?P<type>[A-Z_]+) .*'
+        - labels:
+            type:
+
+promtail_nginx_default_stages:
+  - match:
+      selector: '{job="nginx"}'
+      stages:
+        - json:
+            expressions:
+              vhost: host
+              method: request_method
+              status: status
+        - labels:
+            vhost:
+            method:
+            status:
+
+promtail_docker_default_stages:
+  - docker: {}
+  - static_labels:
+      job: docker
+      env: "{{ promtail_labels_env }}"
+      instance: "{{ promtail_labels_instance }}"
+      source: "{{ promtail_labels_instance }}"
+
+# if per-job limits are set - "placeholder" keys ([0]) will be replaced with limit section
+# if no per-job limits present - "placeholder" keys will be simply deleted
 # this behaviour needs to be reworked after moving to newer jinja versions or adding do-extension
+promtail_placeholder_list:
+  - placeholder
+
+# make sure to use promtail_placeholder_list in pipeline_stages formation
 promtail_default_jobs:
   relay:
     - job_name: relay
@@ -72,8 +113,7 @@ promtail_default_jobs:
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
             __path__: /var/log/*log
-      pipeline_stages:
-        - placeholder
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_system_custom_stages }}"
   audit:
     - job_name: audit
       static_configs:
@@ -85,15 +125,7 @@ promtail_default_jobs:
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
             __path__: /var/log/audit/*.log
-      pipeline_stages:
-        - placeholder
-        - match:
-            selector: '{job="audit"}'
-            stages:
-              - regex:
-                  expression: 'type=(?P<type>[A-Z_]+) .*'
-              - labels:
-                  type:
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_audit_custom_stages + promtail_audit_default_stages }}"
   nginx:
     - job_name: nginx
       static_configs:
@@ -105,20 +137,7 @@ promtail_default_jobs:
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
             __path__: /var/log/nginx/*access.log
-      pipeline_stages:
-        - placeholder
-        - match:
-            selector: '{job="nginx"}'
-            stages:
-              - json:
-                  expressions:
-                    vhost: host
-                    method: request_method
-                    status: status
-              - labels:
-                  vhost:
-                  method:
-                  status:
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_nginx_custom_stages + promtail_nginx_default_stages }}"
   journal:
     - job_name: journal
       journal:
@@ -137,8 +156,7 @@ promtail_default_jobs:
           target_label: nodename
         - source_labels: ['__journal_syslog_identifier']
           target_label: syslog_identifier
-      pipeline_stages:
-        - placeholder
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_custom_stages }}"
   docker:
     - job_name: docker
       docker_sd_configs:
@@ -147,14 +165,7 @@ promtail_default_jobs:
               values: ['promtail=true']
           host: unix:///var/run/docker.sock
           refresh_interval: 15s
-      pipeline_stages:
-        - placeholder
-        - docker: {}
-        - static_labels:
-            job: docker
-            env: "{{ promtail_labels_env }}"
-            instance: "{{ promtail_labels_instance }}"
-            source: "{{ promtail_labels_instance }}"
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_custom_stages + promtail_docker_default_stages }}"
       relabel_configs:
         - regex: /(.*)
           source_labels: ['__meta_docker_container_name']

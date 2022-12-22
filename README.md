@@ -113,6 +113,42 @@ For every job you can control rate, burst and drop mode, e.g.:
 
 `drop` and `burst` keys are optional - if omitted, they will be inherited from global `promtail_limits_config.readline_rate_drop` and `promtail_limits_config.readline_burst`.
 
+### Custom pipeline stages (per job)
+
+You can add custom elements to pipeline_stages section. It can be done with these lists:
+
+| Param | Description |
+| -------- | -------- |
+| `promtail_system_custom_stages` | Custom pipeline stages for system job. |
+| `promtail_nginx_custom_stages` | Custom pipeline stages for nginx job. |
+| `promtail_audit_custom_stages` | Custom pipeline stages for audit job. |
+| `promtail_journal_custom_stages` | Custom pipeline stages for journal job. |
+| `promtail_docker_custom_stages` | Custom pipeline stages for docker job. |
+
+These custom pipeline stages will be added after per job limits, if they have been applied.
+
+An example with the drop stage for journald job (value matches the source):
+
+```yaml
+      promtail_journal_custom_stages:
+          - drop:
+              source: syslog_identifier
+              value: systemd
+              drop_counter_reason: "Custom: testing"
+```
+
+An example with the drop stage for the system job (regex matches the source):
+
+```yaml
+      promtail_system_custom_stages:
+          - drop:
+              selector: '{filename="/var/log/syslog"}'
+              expression: ".*.(smtp|SMTP|postfix|DKIM|dovecot|unexpected RCODE REFUSED).*"
+              drop_counter_reason: "Custom: lines from mail."
+```
+
+If you won't set drop_counter_reason it can provoke Log_entries_drop_ENV_XXpct alerts. To avoid it - start the reason with "Custom:" (e.g. "Custom: some reason here"), alert-rules will ignore drop-counters with such values as reason. If you want to learn more about drop stages, check [this](https://grafana.com/docs/loki/latest/clients/promtail/stages/drop/).
+
 ### Resource usage
 
 Could be controlled via `promtail_limits`.
