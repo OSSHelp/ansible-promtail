@@ -125,7 +125,7 @@ promtail_default_jobs:
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
             __path__: /var/log/audit/*.log
-      pipeline_stages: "{{ promtail_placeholder_list + promtail_audit_custom_stages + promtail_audit_default_stages }}"
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_audit_default_stages + promtail_audit_custom_stages }}"
   nginx:
     - job_name: nginx
       static_configs:
@@ -137,7 +137,7 @@ promtail_default_jobs:
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
             __path__: /var/log/nginx/*access.log
-      pipeline_stages: "{{ promtail_placeholder_list + promtail_nginx_custom_stages + promtail_nginx_default_stages }}"
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_nginx_default_stages + promtail_nginx_custom_stages }}"
   journal:
     - job_name: journal
       journal:
@@ -165,7 +165,7 @@ promtail_default_jobs:
               values: ['promtail=true']
           host: unix:///var/run/docker.sock
           refresh_interval: 15s
-      pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_custom_stages + promtail_docker_default_stages }}"
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_docker_default_stages + promtail_docker_custom_stages }}"
       relabel_configs:
         - regex: /(.*)
           source_labels: ['__meta_docker_container_name']
