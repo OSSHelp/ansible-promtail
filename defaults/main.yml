@@ -140,7 +140,7 @@ promtail_default_jobs:
             env: "{{ promtail_labels_env }}"
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
-            __path__: /var/log/nginx/*access.log
+            __path__: /var/log/nginx/*.log
       pipeline_stages: "{{ promtail_placeholder_list + promtail_nginx_default_stages + promtail_nginx_custom_stages }}"
   journal:
     - job_name: journal
