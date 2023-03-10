@@ -28,7 +28,7 @@ scrape_configs:
 {% endif %}
   {{ promtail_default_jobs.system | to_nice_yaml(indent=2) | indent(2, False) }}
 {% endif -%}
-{% if promtail_collect_journal and ansible_distribution_release != 'xenial' %}
+{% if promtail_collect_journal %}
 {% if promtail_limits_journal.rate is defined %}
 {% set x=promtail_default_jobs.journal[0]["pipeline_stages"].__setitem__(0, {"limit": {"rate": promtail_limits_journal.rate, "burst": promtail_limits_journal.burst|default(promtail_limits_config.readline_burst), "drop": promtail_limits_journal.drop|default(promtail_limits_config.readline_rate_drop)}}) %}
 {% endif %}

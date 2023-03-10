@@ -44,7 +44,7 @@ Can be done with following switches:
 | `promtail_collect_system` | `true` | Collecting logs from `/var/log/*log`. |
 | `promtail_collect_nginx` | `false` | Collecting nginx access logs from `/var/log/nginx/*access.log`.  |
 | `promtail_collect_audit` | `false` | Collecting audit logs from `/var/log/audit/*.log`. |
-| `promtail_collect_journal` | `false` | Collecting messages from journald. **Not supported on xenial.** |
+| `promtail_collect_journal` | `false` | Collecting messages from journald. |
 | `promtail_collect_docker` | `false` | Collecting messages from dockerd. |
 
 ### Generating custom jobs

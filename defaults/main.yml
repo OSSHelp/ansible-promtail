@@ -147,7 +147,7 @@ promtail_default_jobs:
       journal:
         json: true
         max_age: 12h
-        path: /var/log/journal
+        path: "{{ '/run/log/journal' if ansible_distribution_release == 'xenial' else '/var/log/journal' }}"
         labels:
           job: systemd-journal
           env: "{{ promtail_labels_env }}"
