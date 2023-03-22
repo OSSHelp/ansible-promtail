@@ -41,11 +41,21 @@ Can be done with following switches:
 | Param | Default | Description |
 | -------- | -------- | -------- |
 | `promtail_relay_enabled` | `false` | Job for receiving logs from other Promtail instances. For example, from lxc-containers. |
-| `promtail_collect_system` | `true` | Collecting logs from `/var/log/*log`. |
-| `promtail_collect_nginx` | `false` | Collecting nginx access logs from `/var/log/nginx/*access.log`.  |
-| `promtail_collect_audit` | `false` | Collecting audit logs from `/var/log/audit/*.log`. |
+| `promtail_collect_system` | `true` | Collecting logs from `promtail_system_path` (see below). |
+| `promtail_collect_nginx` | `false` | Collecting nginx access logs from `promtail_nginx_path` (see below). |
+| `promtail_collect_audit` | `false` | Collecting audit logs from `promtail_audit_path` (see below). |
 | `promtail_collect_journal` | `false` | Collecting messages from journald. |
 | `promtail_collect_docker` | `false` | Collecting messages from dockerd. |
+
+### Custom paths for default jobs
+
+Useful for limitation or when logs are being kept in non-standard places.
+
+| Param | Default | Description |
+| -------- | -------- | -------- |
+| `promtail_audit_path` | `/var/log/audit/*.log` | Path for `audit` job. |
+| `promtail_nginx_path` | `/var/log/nginx/*.log` | Path for `nginx` job. |
+| `promtail_system_path` | `/var/log/*log` | Path for `system` job. |
 
 ### Generating custom jobs
 

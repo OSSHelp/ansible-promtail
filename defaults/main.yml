@@ -51,6 +51,10 @@ promtail_audit_custom_stages: []
 promtail_journal_custom_stages: []
 promtail_docker_custom_stages: []
 
+promtail_system_path: /var/log/*log
+promtail_audit_path: /var/log/audit/*.log
+promtail_nginx_path: /var/log/nginx/*.log
+
 promtail_audit_default_stages:
   - match:
       selector: '{job="audit"}'
@@ -116,7 +120,7 @@ promtail_default_jobs:
             env: "{{ promtail_labels_env }}"
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
-            __path__: /var/log/*log
+            __path__: "{{ promtail_system_path }}"
       pipeline_stages: "{{ promtail_placeholder_list + promtail_system_custom_stages }}"
   audit:
     - job_name: audit
@@ -128,7 +132,7 @@ promtail_default_jobs:
             env: "{{ promtail_labels_env }}"
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
-            __path__: /var/log/audit/*.log
+            __path__: "{{ promtail_audit_path }}"
       pipeline_stages: "{{ promtail_placeholder_list + promtail_audit_default_stages + promtail_audit_custom_stages }}"
   nginx:
     - job_name: nginx
@@ -140,7 +144,7 @@ promtail_default_jobs:
             env: "{{ promtail_labels_env }}"
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
-            __path__: /var/log/nginx/*.log
+            __path__: "{{ promtail_nginx_path }}"
       pipeline_stages: "{{ promtail_placeholder_list + promtail_nginx_default_stages + promtail_nginx_custom_stages }}"
   journal:
     - job_name: journal
