@@ -71,15 +71,11 @@ promtail_nginx_default_stages:
         - json:
             expressions:
               vhost: host
-              method: request_method
-              status: status
         - regex:
             source: filename
             expression: "(.+)?(?P<log_type>(access|error|debug))(.+)?\\.log"
         - labels:
             vhost:
-            method:
-            status:
             log_type:
 
 promtail_docker_default_stages:
