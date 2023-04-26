@@ -80,6 +80,26 @@ promtail_nginx_default_stages:
 
 promtail_docker_default_stages:
   - docker: {}
+  - match:
+      selector: '{log_type="nginx"}'
+      stages:
+        - json:
+            expressions:
+              method: request_method
+              status: status
+              vhost: host
+  - match:
+      selector: '{log_type="traefik"}'
+      stages:
+        - json:
+            expressions:
+              method: RequestMethod
+              status: DownstreamStatus
+              vhost: RequestAddr
+  - labels:
+      method: null
+      status: null
+      vhost: null
   - static_labels:
       job: docker
       env: "{{ promtail_labels_env }}"
@@ -178,3 +198,7 @@ promtail_default_jobs:
         - regex: /(.*)
           source_labels: ['__meta_docker_container_name']
           target_label: container_name
+        - regex: '/(.*?)(nginx|traefik)(.*?)'
+          source_labels: ['__meta_docker_container_name']
+          target_label: log_type
+          replacement: $2
