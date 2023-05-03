@@ -55,6 +55,8 @@ promtail_system_path: /var/log/*log
 promtail_audit_path: /var/log/audit/*.log
 promtail_nginx_path: /var/log/nginx/*.log
 
+promtail_app_regex: '/(.*?)(app_|app-)(.*?)'
+
 promtail_audit_default_stages:
   - match:
       selector: '{job="audit"}'
@@ -184,6 +186,10 @@ promtail_default_jobs:
           target_label: nodename
         - source_labels: ['__journal_syslog_identifier']
           target_label: syslog_identifier
+        - regex: "{{ promtail_app_regex }}"
+          source_labels: ['__meta_docker_container_name']
+          target_label: log_type
+          replacement: application
       pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_custom_stages }}"
   docker:
     - job_name: docker
@@ -198,6 +204,10 @@ promtail_default_jobs:
         - regex: /(.*)
           source_labels: ['__meta_docker_container_name']
           target_label: container_name
+        - regex: "{{ promtail_app_regex }}"
+          source_labels: ['__meta_docker_container_name']
+          target_label: log_type
+          replacement: application
         - regex: '/(.*?)(nginx|traefik)(.*?)'
           source_labels: ['__meta_docker_container_name']
           target_label: log_type
