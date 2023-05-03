@@ -55,7 +55,7 @@ promtail_system_path: /var/log/*log
 promtail_audit_path: /var/log/audit/*.log
 promtail_nginx_path: /var/log/nginx/*.log
 
-promtail_app_regex: '/(.*?)(app_|app-)(.*?)'
+promtail_app_regex: '(.*?)(app_|app-)(.*?)'
 
 promtail_audit_default_stages:
   - match:
@@ -187,7 +187,7 @@ promtail_default_jobs:
         - source_labels: ['__journal_syslog_identifier']
           target_label: syslog_identifier
         - regex: "{{ promtail_app_regex }}"
-          source_labels: ['__meta_docker_container_name']
+          source_labels: ['systemd_unit']
           target_label: log_type
           replacement: application
       pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_custom_stages }}"
