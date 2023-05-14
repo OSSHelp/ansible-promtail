@@ -55,7 +55,19 @@ Useful for limitation or when logs are being kept in non-standard places.
 | -------- | -------- | -------- |
 | `promtail_audit_path` | `/var/log/audit/*.log` | Path for `audit` job. |
 | `promtail_nginx_path` | `/var/log/nginx/*.log` | Path for `nginx` job. |
-| `promtail_system_path` | `/var/log/*log` | Path for `system` job. |
+| `promtail_system_path` | `/var/log/{*,apt/*,drone-runner-exec/*,webhook/*,netdata/*}log` | Path for `system` job. |
+
+Promtail uses doublestar library. So if you want to set more specific path, read [this](https://github.com/bmatcuk/doublestar#patterns) first.
+
+### Custom regex for log_type label
+
+By default journal and docker jobs try to find applications by systemd units or containers names. For this purpose they use this regex:
+
+```yaml
+/(.*?)(app_|app-)(.*?)
+```
+
+If you have containers or systemd units without `app(-|_)` prefix in their name, you can override regex with `promtail_app_regex` variable.
 
 ### Generating custom jobs
 
@@ -73,6 +85,24 @@ Using it will not override any job enablers above, so make sure that `promtail_c
                 instance: "{{ ansible_host }}"
                 source: "{{ inventory_hostname }}"
                 __path__: /var/log/*log
+```
+
+For custom application log you need to add log_type=application and app_name=your-app-name-here labels to config above. Without them logs of your custom application won't be available at the Appliction Dashboard in Grafana. For example:
+
+```yaml
+      promtail_scrape_configs:
+        - job_name: custom-apps
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: varlogs
+                env: production
+                log_type: application
+                app_name: app-name-here
+                instance: "{{ ansible_host }}"
+                source: "{{ inventory_hostname }}"
+                __path__: /path/to/app/*log
 ```
 
 You can also use your own j2-template to generate custom config, see `promtail_main_cfg_template` param.
@@ -161,7 +191,7 @@ If you won't set drop_counter_reason it can provoke Log_entries_drop_ENV_XXpct a
 
 ### Resource usage
 
-Could be controlled via `promtail_limits`.
+Could be controlled via `promtail_service_limits`.
 
 | Param | Default | Description |
 | -------- | -------- | -------- |

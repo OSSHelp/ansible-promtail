@@ -51,11 +51,22 @@ promtail_audit_custom_stages: []
 promtail_journal_custom_stages: []
 promtail_docker_custom_stages: []
 
-promtail_system_path: /var/log/*log
+promtail_system_path: /var/log/{*,apt/*,drone-runner-exec/*,webhook/*,netdata/*}log
 promtail_audit_path: /var/log/audit/*.log
 promtail_nginx_path: /var/log/nginx/*.log
 
 promtail_app_regex: '(.*?)(app_|app-)(.*?)'
+
+promtail_system_default_stages:
+  - multiline:
+      firstline: '^(Start-Date|Log started)'
+
+promtail_journal_default_stages:
+  - match:
+      selector: '{log_type="application"}'
+      stages:
+        - labels:
+            app_name: systemd_unit
 
 promtail_audit_default_stages:
   - match:
@@ -98,6 +109,11 @@ promtail_docker_default_stages:
               method: RequestMethod
               status: DownstreamStatus
               vhost: RequestAddr
+  - match:
+      selector: '{log_type="application"}'
+      stages:
+        - labels:
+            app_name: container_name
   - labels:
       method: null
       status: null
@@ -139,7 +155,7 @@ promtail_default_jobs:
             instance: "{{ promtail_labels_instance }}"
             source: "{{ promtail_labels_instance }}"
             __path__: "{{ promtail_system_path }}"
-      pipeline_stages: "{{ promtail_placeholder_list + promtail_system_custom_stages }}"
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_system_default_stages + promtail_system_custom_stages }}"
   audit:
     - job_name: audit
       static_configs:
@@ -190,7 +206,7 @@ promtail_default_jobs:
           source_labels: ['systemd_unit']
           target_label: log_type
           replacement: application
-      pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_custom_stages }}"
+      pipeline_stages: "{{ promtail_placeholder_list + promtail_journal_default_stages + promtail_journal_custom_stages }}"
   docker:
     - job_name: docker
       docker_sd_configs:
