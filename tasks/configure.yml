@@ -1,5 +1,4 @@
 ---
-
 - name: create systemd unit
   template:
     src: promtail-systemd-unit.j2

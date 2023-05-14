@@ -1,5 +1,4 @@
 ---
-
 - name: create group
   group:
     name: "{{ promtail_user.group }}"

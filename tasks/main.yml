@@ -1,9 +1,13 @@
 ---
-
 - name: gather required facts
   setup:
     gather_subset: [min]
   when: ansible_distribution_release is not defined
+
+- name: check default journald path
+  stat:
+    path: /var/log/journal
+  register: defalt_journal_path
 
 - name: install
   include_tasks: install.yml
