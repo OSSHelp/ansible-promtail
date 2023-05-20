@@ -137,13 +137,7 @@ promtail_default_jobs:
       loki_push_api:
         server:
           http_listen_port: 3500
-        labels:
-          instance: "{{ promtail_labels_instance }}"
-      relabel_configs:
-        - source_labels: ['instance']
-          target_label: 'source'
-        - target_label: 'instance'
-          replacement: "{{ promtail_labels_instance }}"
+
   system:
     - job_name: system
       static_configs:
