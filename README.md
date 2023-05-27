@@ -29,6 +29,7 @@ Role for Promtail installation and configuration.
 | `promtail_setup` | `full` | Setup mode. See [OSSHelp KB article](https://oss.help/kb4895) |
 | `promtail_version` | `2.6.1` | Version to install. Select from [available releases](https://github.com/grafana/loki/releases). |
 | `promtail_clients` | `- url: 'http://localhost:3100/loki/api/v1/push'` | List of clients. |
+| `promtail_log_format` | `json` | Output log messages in the given format. Valid formats: `logfmt`, `json` |
 | `promtail_additional_groups` | `[adm]` | List of groups to add the promtail user to (for logs access). By default Promtail is running under root for now, so no need in changing this param anyhow. |
 | `promtail_main_cfg_template` | `promtail-main-cfg.j2` | j2-tempalte to use for main configuration file generation. |
 | `promtail_labels_env` | `production` | Value to use in `environment` label in generated jobs. |

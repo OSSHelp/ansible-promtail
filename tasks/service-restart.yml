@@ -1,0 +1,23 @@
+---
+- name: configuration check
+  block:
+    - name: check promtail configuration
+      command: "promtail -config.file={{ promtail_dirs.config_dir }}/{{ promtail_config_file }} -log.format={{ promtail_log_format | lower }} -version"
+      ignore_errors: true
+      register: promtail_syntax_check
+      changed_when: false
+    - name: show errors
+      debug:
+        msg: "{{ promtail_syntax_check.stderr }}"
+      when: promtail_syntax_check.rc != 0
+    - name: Notify if bad syntax
+      assert:
+        that:
+          - promtail_syntax_check.rc == 0
+        fail_msg: "Promtail configuration check failed. You should check debug information above and fix the problem(s)."
+    - name: restart promtail
+      systemd:
+        name: "{{ promtail_service_name }}"
+        state: restarted
+      when: promtail_syntax_check.rc == 0
+  when: not ansible_check_mode

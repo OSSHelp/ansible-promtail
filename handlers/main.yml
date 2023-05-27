@@ -5,6 +5,4 @@
     daemon_reload: true
 
 - name: restart promtail service
-  systemd:
-    name: "{{ promtail_service_name }}"
-    state: restarted
+  include_tasks: service-restart.yml

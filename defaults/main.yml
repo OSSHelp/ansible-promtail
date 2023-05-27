@@ -24,6 +24,7 @@ promtail_labels_instance: "{{ inventory_hostname }}"
 promtail_server:
   http_listen_port: 9080
   grpc_listen_port: 0
+promtail_log_format: json
 promtail_positions:
   filename: "{{ promtail_dirs.lib_dir }}/positions.yaml"
 promtail_clients:

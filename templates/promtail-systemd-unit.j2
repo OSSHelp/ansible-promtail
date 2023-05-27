@@ -16,7 +16,7 @@ PIDFile=/run/promtail/pid
 MemoryLimit={{ promtail_service_limits.memory }}
 PIDFile=/var/run/promtail/pid
 {% endif %}
-ExecStart=/sbin/start-stop-daemon -Sbmp /var/run/promtail/pid -x {{ promtail_dirs.binary_dir }}/{{ promtail_binary_name }} -- -config.file {{ promtail_dirs.config_dir }}/{{ promtail_config_file }}
+ExecStart=/sbin/start-stop-daemon -Sbmp /var/run/promtail/pid -x {{ promtail_dirs.binary_dir }}/{{ promtail_binary_name }} -- -config.file {{ promtail_dirs.config_dir }}/{{ promtail_config_file }} -log.format={{ promtail_log_format | lower }}
 
 Restart=always
 RestartSec=5
