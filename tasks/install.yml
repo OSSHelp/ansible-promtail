@@ -88,6 +88,7 @@
         owner: root
         group: "{{ promtail_user.group }}"
         mode: 0750
+      notify: restart promtail service
 
     - name: remove tmp dir
       file:
