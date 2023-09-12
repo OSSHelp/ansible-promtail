@@ -9,7 +9,7 @@ User={{ promtail_user.user }}
 Group={{ promtail_user.group }}
 RuntimeDirectory=promtail
 RuntimeDirectoryMode=0755
-{% if ansible_distribution_release == 'focal' %}
+{% if ansible_distribution_release == 'focal' or ansible_distribution_release == 'jammy' %}
 MemoryMax={{ promtail_service_limits.memory }}
 PIDFile=/run/promtail/pid
 {% else %}
